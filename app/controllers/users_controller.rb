@@ -2,9 +2,10 @@ class UsersController < ApplicationController
   def create
     user = User.new
     assign_params_to_user(user, params)
+    user.app_id = current_app.id
     user.save!
     user.regenerate_token
-    render json: user_to_json(user)
+    render json: user.attributes_for_api.merge(token: user.token)
   end
 
   def update
@@ -12,7 +13,7 @@ class UsersController < ApplicationController
       assign_params_to_user(current_user, params)
       current_user.regenerate_token if current_user.password_digest_changed?
       current_user.save!
-      render json: user_to_json(current_user)
+      render json: user.attributes_for_api.merge(token: user.token)
     else
       render status: :unauthorized
     end
@@ -27,7 +28,4 @@ class UsersController < ApplicationController
     user.data = params[:data] if params[:data]
   end
 
-  def user_to_json(user)
-    user.slice(:id, :email, :username, :data, :created_at, :updated_at, :token)
-  end
 end
