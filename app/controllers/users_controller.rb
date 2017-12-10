@@ -16,10 +16,10 @@ class UsersController < ApplicationController
       render json: user.attributes_for_api
     elsif !user
       render json: {message:'user not found'}, status: :not_found
-    elsif current_user
-      render json: {message:'you do not have write access to this user'}, status: :forbidden
-    else
+    elsif !current_user
       render json: {message:'you must sign in to edit users'}, status: :unauthorized
+    else
+      render json: {message:'you do not have write access to this user'}, status: :forbidden
     end
   end
 
