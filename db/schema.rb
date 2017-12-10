@@ -10,10 +10,21 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20171208211108) do
+ActiveRecord::Schema.define(version: 20171210225524) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "app_objects", force: :cascade do |t|
+    t.integer  "app_id"
+    t.string   "type"
+    t.jsonb    "belongs_to", default: {}
+    t.jsonb    "data",       default: {}
+    t.datetime "created_at",              null: false
+    t.datetime "updated_at",              null: false
+    t.index ["app_id", "type"], name: "index_app_objects_on_app_id_and_type", using: :btree
+    t.index ["app_id"], name: "index_app_objects_on_app_id", using: :btree
+  end
 
   create_table "apps", force: :cascade do |t|
     t.string   "name"

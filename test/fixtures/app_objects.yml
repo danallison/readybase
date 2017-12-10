@@ -1,0 +1,13 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  app_id: 1
+  type: 
+  belongs_to: 
+  data: 
+
+two:
+  app_id: 1
+  type: 
+  belongs_to: 
+  data: 
