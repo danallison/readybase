@@ -18,9 +18,11 @@ ActiveRecord::Schema.define(version: 20171208211108) do
   create_table "apps", force: :cascade do |t|
     t.string   "name"
     t.string   "public_id"
-    t.jsonb    "config",     default: {}
-    t.datetime "created_at",              null: false
-    t.datetime "updated_at",              null: false
+    t.integer  "owner_id"
+    t.jsonb    "config",      default: {}
+    t.jsonb    "public_data", default: {}
+    t.datetime "created_at",               null: false
+    t.datetime "updated_at",               null: false
     t.index ["public_id"], name: "index_apps_on_public_id", unique: true, using: :btree
   end
 
@@ -32,7 +34,8 @@ ActiveRecord::Schema.define(version: 20171208211108) do
     t.string   "token"
     t.string   "reset_password_token"
     t.datetime "reset_password_sent_at"
-    t.jsonb    "data",                   default: {}
+    t.jsonb    "private_data",           default: {}
+    t.jsonb    "public_data",            default: {}
     t.datetime "created_at",                          null: false
     t.datetime "updated_at",                          null: false
     t.index ["app_id", "email"], name: "index_users_on_app_id_and_email", unique: true, using: :btree
