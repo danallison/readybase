@@ -33,10 +33,37 @@ class AppObjectsController < ApplicationController
     end
   end
 
+  def index
+    render json: scope.map(&:public_attributes_for_api)
+  end
+
   private
 
   def requested_object
-    AppObject.find_by_app_id_and_unique_id(current_app.id, params[:id])
+    scope.find_by_unique_id(params[:id])
+  end
+
+  def scope
+    return @scope if @scope
+    @scope = AppObject.where(app_id: current_app.id)
+    if params[:user_id]
+      scope_id = User.unique_id_to_id(params[:user_id])
+      prefix = User.unique_id_prefix
+    elsif params[:app_object_id]
+      scope_id = AppObject.unique_id_to_id(params[:app_object_id])
+      prefix = AppObject.unique_id_prefix
+    end
+    if scope_id && prefix
+      @scope = scope.where_associated(
+        app_id: current_app.id,
+        associated_type: prefix,
+        associated_id: scope_id.to_i
+      )
+    end
+    if params[:type]
+      @scope = @scope.where(type: params[:type])
+    end
+    @scope
   end
 
   def assign_params_to_object(object, params)

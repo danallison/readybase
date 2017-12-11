@@ -10,10 +10,22 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20171210225524) do
+ActiveRecord::Schema.define(version: 20171210235949) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "app_object_associations", force: :cascade do |t|
+    t.integer  "app_id"
+    t.string   "association_name"
+    t.integer  "object_id"
+    t.string   "associated_type"
+    t.integer  "associated_id"
+    t.datetime "created_at",       null: false
+    t.datetime "updated_at",       null: false
+    t.index ["app_id", "associated_type", "associated_id"], name: "index_associations_on_app_id_and_associated_columns", using: :btree
+    t.index ["app_id", "object_id"], name: "index_app_object_associations_on_app_id_and_object_id", using: :btree
+  end
 
   create_table "app_objects", force: :cascade do |t|
     t.integer  "app_id"
