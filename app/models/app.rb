@@ -1,7 +1,7 @@
 class App < ApplicationRecord
   has_many :users
   belongs_to :user, foreign_key: :owner_id
-
+  has_secure_token :public_id
   alias_method :owner, :user
 
   def attributes_for_api
