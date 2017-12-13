@@ -1,14 +1,7 @@
 class SessionsController < ApplicationController
   def create
     if current_user
-      unless current_session
-        @current_session = Session.create(
-          app_id: current_app.id,
-          user_id: current_user.id,
-          user_agent: request.user_agent,
-          expires_at: DateTime.now + 365.days # TODO check app config
-        )
-      end
+      new_session! unless current_session
       token = get_encrypted_token
       render json: {token: token, user: current_user.attributes_for_api}
     else
@@ -35,17 +28,6 @@ class SessionsController < ApplicationController
     else
       @current_user = super
     end
-  end
-
-  def get_encrypted_token
-    encryptor.encrypt_and_sign([
-      current_app.id,
-      current_session.token,
-      current_user.id,
-      current_session.user_agent,
-      current_session.expires_at,
-      SecureRandom.hex(4)
-    ].to_json)
   end
 
 end

@@ -4,14 +4,15 @@ class UsersController < ApplicationController
     assign_params_to_user(user, params)
     user.app_id = current_app.id
     user.save!
-    render json: user.attributes_for_api.merge(token: user.token)
+    @current_user = user
+    new_session!
+    render json: {token: get_encrypted_token, user: user.attributes_for_api}
   end
 
   def update
     user = requested_user
     if can_edit_user?(user)
       assign_params_to_user(user, params)
-      user.regenerate_token if user.password_digest_changed?
       user.save!
       render json: user.attributes_for_api
     elsif !user
