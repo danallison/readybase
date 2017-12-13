@@ -22,8 +22,14 @@ class SessionsController < ApplicationController
 
   def current_user
     return @current_user if @current_user
-    if params[:email] && params[:password]
-      user = current_app.users.find_by_email(params[:email])
+    if params[:login]
+      login = JSON.parse(Base64.decode64(params[:login]))
+      params[:email] = login['email']
+      params[:username] = login['username']
+      params[:password] = login['password']
+    end
+    if (params[:email] || params[:username]) && params[:password]
+      user = current_app.users.find_by_email_or_username(params[:email], params[:username])
       @current_user = user if user && user.authenticate(params[:password])
     else
       @current_user = super

@@ -17,7 +17,7 @@ class ApplicationController < ActionController::API
   def current_session
     return @current_session if @current_session
     if current_token
-      decrypted_token = encryptor.decrypt_and_verify(current_token)
+      decrypted_token = encryptor.decrypt_and_verify(Base64.decode64(current_token))
       app_id, session_token, user_id = JSON.parse(decrypted_token)
       return nil if app_id != current_app.id
       @current_session = Session.find_by_app_id_and_token(app_id, session_token)
@@ -47,14 +47,14 @@ class ApplicationController < ActionController::API
   end
 
   def get_encrypted_token
-    encryptor.encrypt_and_sign([
+    Base64.encode64(encryptor.encrypt_and_sign([
       current_app.id,
       current_session.token,
       current_user.id,
       current_session.user_agent,
       current_session.expires_at,
-      SecureRandom.hex(4)
-    ].to_json)
+      SecureRandom.hex(16)
+    ].to_json)).gsub("\n","")
   end
 
   def model

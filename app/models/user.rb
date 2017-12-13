@@ -24,6 +24,12 @@ class User < ApplicationRecord
     :user_id
   end
 
+  def self.find_by_email_or_username(email, username)
+    user = self.where(email: email || username).first
+    user = self.where(username: username).first if !user && username
+    user
+  end
+
   def attributes_for_api
     {id: unique_id}.merge(self.slice(:email, :username, :public_data, :private_data, :belongs_to, :created_at, :updated_at))
   end
