@@ -57,4 +57,43 @@ class ApplicationController < ActionController::API
     ].to_json)
   end
 
+  def model
+    @model ||= self.class.to_s.gsub("sController", "").constantize
+  end
+
+  def scope
+    return @scope if @scope
+    @scope = model.where(app_id: current_app.id)
+    if params[:user_id]
+      associated_user_scope = User.where(app_id: current_app.id)
+      associated_user = associated_user_scope.find_by_unique_id(params[:user_id])
+      scope_id = associated_user.id # This will raise if associated_user is nil
+      prefix = User.unique_id_prefix
+    elsif params[:app_object_id]
+      associated_object_scope = AppObject.where(app_id: current_app.id)
+      if params[:associated_object_type]
+        associated_object_type = params[:associated_object_type].singularize
+        associated_object_scope = associated_object_scope.where(type: associated_object_type)
+      end
+      associated_object = associated_object_scope.find_by_unique_id(params[:app_object_id])
+      scope_id = associated_object.id # This will raise if associated_object is nil
+      prefix = AppObject.unique_id_prefix
+    end
+    if scope_id && prefix
+      @scope = scope.where_associated(
+        app_id: current_app.id,
+        associated_type: prefix,
+        associated_id: scope_id.to_i
+      )
+    end
+    @scope
+  end
+
+  def render(options)
+    options[:json] = options[:json].to_json unless options[:json].is_a?(String)
+    # Assuming 8-bit characters
+    byte_count = options[:json].length.bytes
+    puts "BYTES => #{byte_count}"
+    super(options)
+  end
 end

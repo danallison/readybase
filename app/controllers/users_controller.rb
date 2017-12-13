@@ -35,10 +35,21 @@ class UsersController < ApplicationController
     end
   end
 
+  def index
+    response = scope.map do |user|
+      if can_edit_user?(user)
+        user.attributes_for_api
+      else
+        user.public_attributes_for_api
+      end
+    end
+    render json: response
+  end
+
   private
 
   def requested_user
-    User.find_by_app_id_and_unique_id(current_app.id, params[:id])
+    scope.find_by_unique_id(params[:id])
   end
 
   def assign_params_to_user(user, params)
@@ -47,6 +58,7 @@ class UsersController < ApplicationController
     user.password = params[:password] if params[:password]
     user.private_data = params[:private_data] if params[:private_data]
     user.public_data = params[:public_data] if params[:public_data]
+    user.belongs_to = params[:belongs_to] if params[:belongs_to]
   end
 
   def can_edit_user?(user)
