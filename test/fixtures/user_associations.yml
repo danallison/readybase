@@ -1,0 +1,15 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  app_id: 1
+  association_name: MyString
+  user_id: 1
+  associated_type: MyString
+  associated_id: 1
+
+two:
+  app_id: 1
+  association_name: MyString
+  user_id: 1
+  associated_type: MyString
+  associated_id: 1

@@ -10,20 +10,20 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20171210235949) do
+ActiveRecord::Schema.define(version: 20171213012208) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
   create_table "app_object_associations", force: :cascade do |t|
     t.integer  "app_id"
-    t.string   "association_name"
     t.integer  "object_id"
+    t.string   "association_name"
     t.string   "associated_type"
     t.integer  "associated_id"
     t.datetime "created_at",       null: false
     t.datetime "updated_at",       null: false
-    t.index ["app_id", "associated_type", "associated_id"], name: "index_associations_on_app_id_and_associated_columns", using: :btree
+    t.index ["app_id", "associated_type", "associated_id"], name: "index_object_associations_on_app_id_and_associated_columns", using: :btree
     t.index ["app_id", "object_id"], name: "index_app_object_associations_on_app_id_and_object_id", using: :btree
   end
 
@@ -49,6 +49,29 @@ ActiveRecord::Schema.define(version: 20171210235949) do
     t.index ["public_id"], name: "index_apps_on_public_id", unique: true, using: :btree
   end
 
+  create_table "sessions", force: :cascade do |t|
+    t.integer  "app_id"
+    t.integer  "user_id"
+    t.string   "token"
+    t.string   "user_agent"
+    t.datetime "expires_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["app_id", "token"], name: "index_sessions_on_app_id_and_token", unique: true, using: :btree
+  end
+
+  create_table "user_associations", force: :cascade do |t|
+    t.integer  "app_id"
+    t.integer  "user_id"
+    t.string   "association_name"
+    t.string   "associated_type"
+    t.integer  "associated_id"
+    t.datetime "created_at",       null: false
+    t.datetime "updated_at",       null: false
+    t.index ["app_id", "associated_type", "associated_id"], name: "index_user_associations_on_app_id_and_associated_columns", using: :btree
+    t.index ["app_id", "user_id"], name: "index_user_associations_on_app_id_and_user_id", using: :btree
+  end
+
   create_table "users", force: :cascade do |t|
     t.integer  "app_id"
     t.string   "email"
@@ -57,6 +80,7 @@ ActiveRecord::Schema.define(version: 20171210235949) do
     t.string   "token"
     t.string   "reset_password_token"
     t.datetime "reset_password_sent_at"
+    t.jsonb    "belongs_to",             default: {}
     t.jsonb    "private_data",           default: {}
     t.jsonb    "public_data",            default: {}
     t.datetime "created_at",                          null: false
