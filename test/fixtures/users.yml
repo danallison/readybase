@@ -8,13 +8,5 @@ one:
   token:
   reset_password_token:
   reset_password_sent_at:
-  data:
-
-# two:
-#   email: MyString
-#   username: MyString
-#   password_digest:
-#   token:
-#   reset_password_token:
-#   reset_password_sent_at:
-#   data:
+  private_data:
+  public_data:

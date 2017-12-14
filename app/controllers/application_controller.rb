@@ -18,11 +18,12 @@ class ApplicationController < ActionController::API
     return @current_session if @current_session
     if current_token
       decrypted_token = encryptor.decrypt_and_verify(Base64.decode64(current_token))
-      app_id, session_token, user_id = JSON.parse(decrypted_token)
+      app_id, session_token, user_id, user_agent = JSON.parse(decrypted_token)
       return nil if app_id != current_app.id
       @current_session = Session.find_by_app_id_and_token(app_id, session_token)
       return nil unless @current_session
       raise 'unexpected user_id mismatch' if user_id != @current_session.user_id
+      raise 'unexpected user_agent mismatch' if user_agent != @current_session.user_agent
       @current_session = nil if request.user_agent != @current_session.user_agent
       @current_session
     end

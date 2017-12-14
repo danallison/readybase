@@ -2,7 +2,7 @@
 
 one:
   name: QuuxBase
-  public_id: quuxbase
+  public_id: <%= Rails.application.config.meta_app_id %>
 
 two:
   name: Todo App

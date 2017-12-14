@@ -3,13 +3,13 @@
 one:
   app_id: 1
   user_id: 1
-  token: MyString
+  token: Pm3SS43VAFLALz3KYy7P
   user_agent: MyString
   expires_at: 2017-12-12 17:22:08
 
 two:
   app_id: 1
   user_id: 1
-  token: MyString
+  token: N1egC3Lv41QGyH7CnBcC
   user_agent: MyString
   expires_at: 2017-12-12 17:22:08

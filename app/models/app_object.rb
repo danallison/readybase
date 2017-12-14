@@ -1,22 +1,15 @@
 class AppObject < ApplicationRecord
   belongs_to :app
   validates :app_id, presence: true
+  validates :type, presence: true
   # validates belongs_to
 
   # NOTE Rails reserves the `type` column for model subclass inheretence,
   # which we don't need (yet), so disabling that here.
   self.inheritance_column = :nil
 
-  def self.unique_id_prefix
-    'o'
-  end
-
-  def self.association_model
-    AppObjectAssociation
-  end
-
-  def self.association_foreign_key
-    :object_id
+  def apply_defaults
+    self.type ||= 'object'
   end
 
   def attributes_for_api

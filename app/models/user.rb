@@ -12,18 +12,6 @@ class User < ApplicationRecord
 
   before_create :set_reset_password_token_to_nil
 
-  def self.unique_id_prefix
-    'u'
-  end
-
-  def self.association_model
-    UserAssociation
-  end
-
-  def self.association_foreign_key
-    :user_id
-  end
-
   def self.find_by_email_or_username(email, username)
     user = self.where(email: email || username).first
     user = self.where(username: username).first if !user && username

@@ -1,10 +1,11 @@
 class ApplicationRecord < ActiveRecord::Base
   self.abstract_class = true
 
+  before_validation :apply_defaults, on: :create
   after_save :process_associations
 
   def self.unique_id_prefix
-    raise "#{self.class} has not defined its 'unique_id_prefix'"
+    self.to_s.downcase.gsub('app', '')[0]
   end
 
   def self.unique_id_to_id(uid)
@@ -30,11 +31,11 @@ class ApplicationRecord < ActiveRecord::Base
   end
 
   def self.association_model
-    nil
+    "#{self}Association".constantize rescue nil
   end
 
   def self.association_foreign_key
-    nil
+    "#{self}_id".downcase.gsub('app', '').to_sym
   end
 
   def self.where_associated(association_params)
@@ -43,6 +44,9 @@ class ApplicationRecord < ActiveRecord::Base
       "SELECT \"#{association_model.table_name}\".\"#{association_foreign_key}\" FROM "
     )
     self.where("\"#{table_name}\".\"id\" IN (#{association_foreign_key_sql})")
+  end
+
+  def apply_defaults
   end
 
   def attributes_for_api
