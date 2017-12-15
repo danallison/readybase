@@ -34,4 +34,38 @@ class AppObjectTest < ActiveSupport::TestCase
     assert_equal(0, associations.length)
   end
 
+  # TODO Clean this up and move it to the correct file
+  test "config service sanitizes correctly" do
+    user = User.first
+    user.roles = ['default']
+    user.data = {
+      'public' => {},
+      'private' => {}
+    }
+    app = App.create(name: 'blah', owner_id: user.id)
+    object = AppObject.new(app_id: app.id, type: 'foo')
+    object.data = {
+      a: {
+        b: {
+          c: 1,
+          d: 2
+        }
+      },
+      x: 3,
+      z: 9
+    }
+    object.save!
+    app.config['access_rules']['foos'] = {
+      'read' => {
+        'roles' => {
+          user.roles[0] => ['id','data.a', 'data.x', '-data.a.b.c','belongs_to.a.b.c', 'dafsdaf']
+        }
+      }
+    }
+    app.save!
+    sanitized_object = app.config_service.sanitize_for_read_access(object, user)
+    sanitized_object = app.config_service.sanitize_for_read_access(user, user)
+    puts sanitized_object
+  end
+
 end

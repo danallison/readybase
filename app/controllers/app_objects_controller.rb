@@ -32,16 +32,36 @@ class AppObjectsController < ApplicationController
   def show
     object = requested_object
     if can_edit_object?(object)
-      render json: object.attributes_for_api
+      response = object.attributes_for_api
+      if params[:include]
+        associations = AppObjectAssociation.where(
+          app_id: current_app.id,
+          object_id: object.id,
+          association_name: params[:include].singularize
+        )
+        associated_ids_by_type = {}
+        associations.each do |a|
+          associated_ids_by_type[a.associated_type] ||= []
+          associated_ids_by_type[a.associated_type] << a.associated_id
+        end
+        user_ids = associated_ids_by_type[User.unique_id_prefix]
+        users = user_ids ? User.where(app_id: current_app.id, id: user_ids) : []
+        object_ids = associated_ids_by_type[AppObject.unique_id_prefix]
+        objects = object_ids ? AppObject.where(app_id: current_app.id, id: object_ids) : []
+        response[:included] = {
+          params[:include] => (users.to_a + objects.to_a).map(&:attributes_for_api)
+        }
+      end
+      render json: response
     elsif object
-      render json: object.public_attributes_for_api
+      render json: object.attributes_for_api
     else
       render json: {message:'object not found'}, status: :not_found
     end
   end
 
   def index
-    render json: scope.map(&:public_attributes_for_api)
+    render json: scope.map(&:attributes_for_api)
   end
 
   private

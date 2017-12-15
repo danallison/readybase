@@ -1,6 +1,33 @@
 class ApplicationController < ActionController::API
 
+  before_action :enforce_app_config
+
   private
+
+  def enforce_app_config
+    puts "HOST => #{request.host} DOMAIN => #{request.domain}"
+    puts "SESSION => #{session}"
+    if !current_app_public_id
+      render json: {message:"header 'X-App-ID' must be a valid app ID"}, status: :not_acceptable
+    elsif !current_app
+      render json: {message:"app not found"}, status: :not_found
+    elsif !current_domain_matches_config?
+      render json: {message:"domain not allowed"}, status: :forbidden
+    end
+  end
+
+  def current_domain_matches_config?
+    allow_domains = current_app.config['allow_domains']
+    return true unless allow_domains
+    allow_domains = [allow_domains] if allow_domains.is_a?(String)
+    domain_matches = false
+    allow_domains.each do |allow_domain|
+      matcher = /#{allow_domain.gsub('.', '\.').gsub('*','.+')}/i
+      domain_matches = matcher.match(request.domain)
+      break if domain_matches
+    end
+    domain_matches
+  end
 
   def current_app_public_id
     request.headers['X-App-ID']

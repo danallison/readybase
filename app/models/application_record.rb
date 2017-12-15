@@ -53,10 +53,6 @@ class ApplicationRecord < ActiveRecord::Base
     raise "#{self.class} has not defined its 'attributes_for_api'"
   end
 
-  def public_attributes_for_api
-    attributes_for_api
-  end
-
   def unique_id_prefix
     self.class.unique_id_prefix
   end

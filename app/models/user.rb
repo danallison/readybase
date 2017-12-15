@@ -17,11 +17,7 @@ class User < ApplicationRecord
   end
 
   def attributes_for_api
-    {id: unique_id}.merge(self.slice(:email, :username, :data, :roles, :belongs_to, :created_at, :updated_at))
-  end
-
-  def public_attributes_for_api
-    attributes_for_api.slice(:id, 'data')
+    {'id' => unique_id}.merge(self.slice(:email, :username, :data, :roles, :belongs_to, :created_at, :updated_at))
   end
 
   def apply_defaults

@@ -21,6 +21,7 @@ module QuuxBase
     # Settings in config/environments/* take precedence over those specified here.
     # Application configuration should go into files in config/initializers
     # -- all .rb files in that directory are automatically loaded.
+    config.autoload_paths += %W(#{config.root}/app/services)
 
     # Only loads a smaller set of middleware suitable for API only apps.
     # Middleware like session, flash, cookies can be added back manually.
@@ -29,5 +30,6 @@ module QuuxBase
 
     # SecureRandom.base58(24)
     config.meta_app_id = 'yWWyBRWrvvhZ3hH7JAoPNmXx'
+    config.default_app_config = JSON.parse(File.read("#{Rails.root}/config/default_app_config.json"))
   end
 end

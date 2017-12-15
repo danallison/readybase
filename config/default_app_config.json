@@ -1,0 +1,55 @@
+{
+  "allowed_domains": ["*"],
+  "allowed_object_types": ["*"],
+  "user_roles": ["admin.super","admin","default"],
+  "access_rules": {
+    "@default": {
+      "read": {
+        "roles": {
+          "admin": ["*"],
+          "default": ["*"],
+          "@anonymous": ["data.public"]
+        }
+      },
+      "write": {
+        "roles": {
+          "admin": ["*"],
+          "default": ["*"],
+          "@anonymous": []
+        }
+      }
+    },
+    "users": {
+      "read": {
+        "roles": {
+          "admin": ["*"],
+          "@self.admin": ["*","-roles"],
+          "@self.admin.super": ["*"],
+          "default": ["*","-data.private","-roles"],
+          "@self.default": ["*","-roles"],
+          "@anonymous": ["data.public"]
+        }
+      },
+      "write": {
+        "roles": {
+          "admin": ["*"],
+          "default": [],
+          "@self.admin": ["*","-roles"],
+          "@self.admin.super": ["*"],
+          "@anonymous": {
+            "create": ["*","-roles"]
+          }
+        }
+      }
+    }
+  },
+  "defaults": {
+    "users": {
+      "roles": ["default"],
+      "data": {
+        "public": {},
+        "private": {}
+      }
+    }
+  }
+}

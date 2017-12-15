@@ -29,7 +29,7 @@ class UsersController < ApplicationController
     if can_edit_user?(user)
       render json: user.attributes_for_api
     elsif user
-      render json: user.public_attributes_for_api
+      render json: user.attributes_for_api
     else
       render json: {message:'user not found'}, status: :not_found
     end
@@ -40,7 +40,7 @@ class UsersController < ApplicationController
       if can_edit_user?(user)
         user.attributes_for_api
       else
-        user.public_attributes_for_api
+        user.attributes_for_api
       end
     end
     render json: response
