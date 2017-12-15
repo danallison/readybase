@@ -80,9 +80,9 @@ ActiveRecord::Schema.define(version: 20171213012208) do
     t.string   "token"
     t.string   "reset_password_token"
     t.datetime "reset_password_sent_at"
+    t.string   "roles",                                            array: true
     t.jsonb    "belongs_to",             default: {}
-    t.jsonb    "private_data",           default: {}
-    t.jsonb    "public_data",            default: {}
+    t.jsonb    "data",                   default: {}
     t.datetime "created_at",                          null: false
     t.datetime "updated_at",                          null: false
     t.index ["app_id", "email"], name: "index_users_on_app_id_and_email", unique: true, using: :btree

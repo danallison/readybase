@@ -6,7 +6,7 @@ one:
   username: dan
   password_digest:
   token:
+  roles:
   reset_password_token:
   reset_password_sent_at:
-  private_data:
-  public_data:
+  data:

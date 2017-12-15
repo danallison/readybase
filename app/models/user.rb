@@ -10,8 +10,6 @@ class User < ApplicationRecord
   validates :email, presence: true
   validates :username, presence: true
 
-  before_create :set_reset_password_token_to_nil
-
   def self.find_by_email_or_username(email, username)
     user = self.where(email: email || username).first
     user = self.where(username: username).first if !user && username
@@ -19,14 +17,17 @@ class User < ApplicationRecord
   end
 
   def attributes_for_api
-    {id: unique_id}.merge(self.slice(:email, :username, :public_data, :private_data, :belongs_to, :created_at, :updated_at))
+    {id: unique_id}.merge(self.slice(:email, :username, :data, :roles, :belongs_to, :created_at, :updated_at))
   end
 
   def public_attributes_for_api
-    attributes_for_api.slice(:id, 'public_data')
+    attributes_for_api.slice(:id, 'data')
   end
 
-  def set_reset_password_token_to_nil
+  def apply_defaults
+    defaults = app.config['defaults']['users']
+    self.data = defaults['data'] if data.blank?
+    self.roles = defaults['roles'] if roles.blank?
     self.reset_password_token = nil
   end
 

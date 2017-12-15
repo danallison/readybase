@@ -8,9 +8,9 @@ class CreateUsers < ActiveRecord::Migration[5.0]
       t.string :token
       t.string :reset_password_token
       t.datetime :reset_password_sent_at
+      t.string :roles, array: true
       t.jsonb :belongs_to, default: {}
-      t.jsonb :private_data, default: {}
-      t.jsonb :public_data, default: {}
+      t.jsonb :data, default: {}
 
       t.timestamps
     end

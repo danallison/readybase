@@ -56,8 +56,7 @@ class UsersController < ApplicationController
     user.email = params[:email] if params[:email]
     user.username = params[:username] if params[:username]
     user.password = params[:password] if params[:password]
-    user.private_data = params[:private_data] if params[:private_data]
-    user.public_data = params[:public_data] if params[:public_data]
+    user.data = params[:data] if params[:data]
     user.belongs_to = params[:belongs_to] if params[:belongs_to]
   end
 
