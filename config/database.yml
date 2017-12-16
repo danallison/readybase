@@ -81,5 +81,5 @@ test:
 production:
   <<: *default
   database: readybase_production
-  username: readybase
+  username: deploy
   password: <%= ENV['READYBASE_DATABASE_PASSWORD'] %>
