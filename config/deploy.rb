@@ -41,9 +41,16 @@ set :rails_env, 'production'
 # Uncomment the following to require manually verifying the host key before first deploy.
 # set :ssh_options, verify_host_key: :secure
 
-# Puma:
-set :puma_conf, "#{shared_path}/config/puma.rb"
 set :rvm_custom_path, "/usr/share/rvm"
+set :bundle_gemfile, "#{current_path}/Gemfile"
+
+# Puma:
+puma_conf_path = "#{shared_path}/config/puma.rb"
+set :puma_conf, puma_conf_path
+set :puma_threads, [1, 1]
+set :puma_workers, 1
+set :puma_restart_command, "bundle exec puma -C #{puma_conf_path}"
+set :puma_control_app, true
 set :puma_init_active_record, true
 set :nginx_config_name, "readybase"
 
