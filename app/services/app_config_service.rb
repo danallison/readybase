@@ -7,16 +7,17 @@ class AppConfigService
   def sanitize_for_read_access(object, current_user)
     roles = current_user.nil? ? ['@anonymous'] : current_user.roles
     object_type = object.is_a?(AppObject) ? object.type : "#{object.class}".downcase
-    if object_type == 'users' && object.id == current_user.id
-      # TODO add @self roles
+    if object.is_a?(User) && object.id == current_user.id
+      roles = roles.map {|r| "@self.#{r}" } + roles
     end
     role_rules = @config['access_rules'][object_type.pluralize]['read']['roles'].slice(*roles)
     return {} if role_rules.empty?
     can_access_all = role_rules.values.any?{|rules| rules == ['*'] }
     object_attrs = object.attributes_for_api
     return object_attrs if can_access_all
-    attrs_for_each_role = role_rules.keys.map do |role|
+    attrs_for_each_role = roles.map do |role|
       rules = role_rules[role]
+      next unless rules
       attrs_for_role = {}
       rules.each do |rule|
         is_negation = rule[0] == '-'
@@ -48,7 +49,7 @@ class AppConfigService
       end
       attrs_for_role
     end
-    attrs_for_each_role[0] # TODO account for multiple roles
+    attrs_for_each_role.compact[0] # TODO account for multiple roles
   end
 
 end
