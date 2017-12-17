@@ -1,7 +1,10 @@
 class User < ApplicationRecord
   has_secure_password
   has_secure_token
-  has_secure_token :reset_password_token
+
+  # NOTE reset_password_token should be a secure token, but
+  # we don't want it to generate on create.
+  # has_secure_token :reset_password_token
 
   belongs_to :app
   has_many :apps, foreign_key: :owner_id
@@ -25,6 +28,10 @@ class User < ApplicationRecord
     self.data = defaults['data'] if data.blank?
     self.roles = defaults['roles'] if roles.blank?
     self.reset_password_token = nil
+  end
+
+  def generate_reset_password_token
+    self.reset_password_token = self.class.generate_unique_secure_token
   end
 
 end

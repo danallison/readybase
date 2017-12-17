@@ -5,8 +5,6 @@ class ApplicationController < ActionController::API
   private
 
   def enforce_app_config
-    puts "HOST => #{request.host} DOMAIN => #{request.domain}"
-    puts "SESSION => #{session}"
     if !current_app_public_id
       render json: {message:"header 'X-App-ID' must be a valid app ID"}, status: :not_acceptable
     elsif !current_app
