@@ -21,15 +21,14 @@ set :deploy_to, "/home/deploy/readybase"
 # set :pty, true
 
 # Default value for :linked_files is []
-# append :linked_files, "config/database.yml", "config/secrets.yml"
-set :linked_files, fetch(:linked_files, []).push('config/puma.rb')
+append :linked_files, 'config/database.yml', 'config/secrets.yml', 'config/puma.rb'
 
 # Default value for linked_dirs is []
 # append :linked_dirs, "log", "tmp/pids", "tmp/cache", "tmp/sockets", "public/system"
 set :linked_dirs, fetch(:linked_dirs, []).push('log', 'tmp/pids', 'tmp/cache', 'tmp/sockets', 'vendor/bundle', 'public/system', 'public/uploads')
 
 # Default value for default_env is {}
-set :default_env, { RAILS_ENV: 'production' }
+# set :default_env, { RAILS_ENV: 'production' }
 set :rails_env, 'production'
 
 # Default value for local_user is ENV['USER']
@@ -49,9 +48,9 @@ puma_conf_path = "#{shared_path}/config/puma.rb"
 set :puma_conf, puma_conf_path
 set :puma_threads, [1, 1]
 set :puma_workers, 1
-set :puma_restart_command, "bundle exec puma -C #{puma_conf_path}"
-set :puma_control_app, true
-set :puma_init_active_record, true
+# set :puma_restart_command, "bundle exec puma -C #{puma_conf_path}"
+# set :puma_control_app, true
+# set :puma_init_active_record, true
 set :nginx_config_name, "readybase"
 
 namespace :deploy do
