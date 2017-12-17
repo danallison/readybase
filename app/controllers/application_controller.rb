@@ -117,6 +117,10 @@ class ApplicationController < ActionController::API
     @scope
   end
 
+  def sanitize(object)
+    current_app.config_service.sanitize_for_read_access(object, current_user)
+  end
+
   def render(options)
     options[:json] = options[:json].to_json unless options[:json].is_a?(String)
     # Assuming 8-bit characters

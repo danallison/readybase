@@ -6,7 +6,7 @@ class UsersController < ApplicationController
     user.save!
     @current_user = user
     new_session!
-    render json: {token: get_encrypted_token, user: user.attributes_for_api}
+    render json: {token: get_encrypted_token, user: sanitize(user)}
   end
 
   def update
@@ -14,7 +14,7 @@ class UsersController < ApplicationController
     if can_edit_user?(user)
       assign_params_to_user(user, params)
       user.save!
-      render json: user.attributes_for_api
+      render json: sanitize(user)
     elsif !user
       render json: {message:'user not found'}, status: :not_found
     elsif !current_user
@@ -27,23 +27,16 @@ class UsersController < ApplicationController
   def show
     user = requested_user
     if can_edit_user?(user)
-      render json: user.attributes_for_api
+      render json: sanitize(user)
     elsif user
-      render json: user.attributes_for_api
+      render json: sanitize(user)
     else
       render json: {message:'user not found'}, status: :not_found
     end
   end
 
   def index
-    response = scope.map do |user|
-      if can_edit_user?(user)
-        user.attributes_for_api
-      else
-        user.attributes_for_api
-      end
-    end
-    render json: response
+    render json: scope.map {|user| sanitize(user) }
   end
 
   private
