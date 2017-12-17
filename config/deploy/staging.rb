@@ -4,6 +4,7 @@
 # You can define all roles on a single server, or split them:
 
 server "readybase.calculist.io", user: "deploy", roles: %w{app db web}
+set :nginx_server_name, "readybase.calculist.io"
 # server "example.com", user: "deploy", roles: %w{app web}, other_property: :other_value
 # server "db.example.com", user: "deploy", roles: %w{db}
 

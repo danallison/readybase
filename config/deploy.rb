@@ -44,6 +44,8 @@ set :rails_env, 'production'
 # Puma:
 set :puma_conf, "#{shared_path}/config/puma.rb"
 set :rvm_custom_path, "/usr/share/rvm"
+set :puma_init_active_record, true
+set :nginx_config_name, "readybase"
 
 namespace :deploy do
   before 'check:linked_files', 'puma:config'
