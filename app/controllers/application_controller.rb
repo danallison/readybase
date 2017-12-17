@@ -57,12 +57,14 @@ class ApplicationController < ActionController::API
   end
 
   def new_session!
-    @current_session = Session.create(
+    @current_session = Session.new(
       app_id: current_app.id,
       user_id: current_user.id,
       user_agent: request.user_agent,
+      token: Session.generate_unique_secure_token,
       expires_at: DateTime.now + 365.days # TODO check app config
     )
+    @current_session.save!
   end
 
   def current_user
