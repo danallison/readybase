@@ -1,11 +1,12 @@
 {
   "allowed_domains": ["*"],
   "allowed_object_types": ["*"],
-  "user_roles": ["admin.super","admin","default"],
+  "user_roles": ["super_admin","admin","default"],
   "access_rules": {
-    "@default": {
+    "objects": {
       "read": {
         "roles": {
+          "super_admin": ["*"],
           "admin": ["*"],
           "default": ["*"],
           "@anonymous": ["data.public"]
@@ -13,6 +14,7 @@
       },
       "write": {
         "roles": {
+          "super_admin": ["*"],
           "admin": ["*"],
           "default": ["*"],
           "@anonymous": []
@@ -22,20 +24,21 @@
     "users": {
       "read": {
         "roles": {
-          "admin": ["*"],
+          "super_admin": ["*"],
           "@self.admin": ["*","-roles"],
-          "@self.admin.super": ["*"],
-          "default": ["*","-data.private","-roles"],
+          "admin": ["*"],
           "@self.default": ["*","-roles"],
+          "default": ["*","-data.private","-roles"],
           "@anonymous": ["data.public"]
         }
       },
       "write": {
         "roles": {
-          "admin": ["*"],
-          "default": [],
+          "super_admin": ["*"],
           "@self.admin": ["*","-roles"],
-          "@self.admin.super": ["*"],
+          "admin": ["*"],
+          "@self.default": ["*","-roles"],
+          "default": [],
           "@anonymous": {
             "create": ["*","-roles"]
           }

@@ -117,8 +117,12 @@ class ApplicationController < ActionController::API
     @scope
   end
 
+  def sanitize_attrs_for_write(attrs, object)
+    current_app.config_service.sanitize_for_access(object, current_user, 'write', request.method, attrs)
+  end
+
   def sanitize(object)
-    current_app.config_service.sanitize_for_read_access(object, current_user)
+    current_app.config_service.sanitize_for_access(object, current_user, 'read')
   end
 
   def render(options)

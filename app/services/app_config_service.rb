@@ -4,19 +4,20 @@ class AppConfigService
     @config = config
   end
 
-  def sanitize_for_read_access(object, current_user)
-    roles = current_user.nil? ? ['@anonymous'] : current_user.roles
+  def sanitize_for_access(object, current_user, access_type, action = nil, object_attrs = nil)
+    roles = (current_user.nil? || current_user.id.nil?) ? ['@anonymous'] : current_user.roles
     object_type = object.is_a?(AppObject) ? object.type : "#{object.class}".downcase
-    if object.is_a?(User) && object.id == current_user.id
+    if current_user && object.is_a?(User) && object.id == current_user.id
       roles = roles.map {|r| "@self.#{r}" } + roles
     end
-    role_rules = @config['access_rules'][object_type.pluralize]['read']['roles'].slice(*roles)
+    role_rules = @config['access_rules'][object_type.pluralize][access_type]['roles'].slice(*roles)
     return {} if role_rules.empty?
     can_access_all = role_rules.values.any?{|rules| rules == ['*'] }
-    object_attrs = object.attributes_for_api
+    object_attrs ||= access_type == 'read' ? object.readable_attributes : object.writeable_attributes
     return object_attrs if can_access_all
     attrs_for_each_role = roles.map do |role|
       rules = role_rules[role]
+      rules = rules[normalize_action(action)] if rules.is_a?(Hash)
       next unless rules
       attrs_for_role = {}
       rules.each do |rule|
@@ -24,7 +25,7 @@ class AppConfigService
         rule = rule[1..-1] if is_negation
         if rule == '*'
           # TODO find a more efficient way to deep clone
-          attrs_for_role = Marshal.load(Marshal.dump(object_attrs))
+          attrs_for_role = JSON.parse(object_attrs.to_json)
         elsif rule.include?('.')
           rule = rule.split('.')
           oa = object_attrs
@@ -50,6 +51,18 @@ class AppConfigService
       attrs_for_role
     end
     attrs_for_each_role.compact[0] # TODO account for multiple roles
+  end
+
+  private
+
+  def normalize_action(action)
+    {
+      get: 'read',
+      post: 'create',
+      put: 'update',
+      patch: 'update',
+      delete: 'delete'
+    }[action.downcase.to_sym] || action.downcase
   end
 
 end

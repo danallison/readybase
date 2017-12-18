@@ -30,6 +30,8 @@ module ReadyBase
 
     # SecureRandom.base58(24)
     config.meta_app_id = 'yWWyBRWrvvhZ3hH7JAoPNmXx'
+    # If the json file below changes, Rails might not pick up the change unless this rb file changes also.
+    # So, here's random string you can change to get Rails to reload the file: 0ded54d7fbbbbd5c805548b7ae545e6
     config.default_app_config = JSON.parse(File.read("#{Rails.root}/config/default_app_config.json"))
   end
 end

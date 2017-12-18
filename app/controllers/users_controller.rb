@@ -46,15 +46,28 @@ class UsersController < ApplicationController
   end
 
   def assign_params_to_user(user, params)
-    user.email = params[:email] if params[:email]
-    user.username = params[:username] if params[:username]
-    user.password = params[:password] if params[:password]
-    user.data = params[:data] if params[:data]
-    user.belongs_to = params[:belongs_to] if params[:belongs_to]
+    attrs = {}
+    attrs[:email] = params[:email] if params[:email]
+    attrs[:username] = params[:username] if params[:username]
+    attrs[:password] = params[:password] if params[:password]
+    attrs[:data] = params[:data].dup if params[:data]
+    attrs[:belongs_to] = params[:belongs_to].dup if params[:belongs_to]
+    attrs = sanitize_attrs_for_write(attrs, user).with_indifferent_access
+
+    user.email = attrs[:email] if attrs[:email]
+    user.username = attrs[:username] if attrs[:username]
+    user.password = attrs[:password] if attrs[:password]
+    if attrs[:data]
+      # TODO Recursively merge nested hashes
+      user.data = (user.data || {}).merge(attrs[:data]).compact
+    end
+    if attrs[:belongs_to]
+      user.belongs_to = (user.belongs_to || {}).merge(attrs[:belongs_to]).compact
+    end
   end
 
   def can_edit_user?(user)
-    user && current_user && user.id == current_user.id
+    user # NOTE No longer hard coding permission logic, delegating to app config
   end
 
 end
