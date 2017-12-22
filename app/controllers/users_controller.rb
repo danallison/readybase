@@ -5,8 +5,8 @@ class UsersController < ApplicationController
     user.app_id = current_app.id
     user.save!
     @current_user = user
-    new_session!
-    render json: {token: get_encrypted_token, user: sanitize(user)}
+    initialize_session! unless current_session
+    render json: sanitize(user)
   end
 
   def update

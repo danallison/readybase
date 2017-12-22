@@ -36,33 +36,48 @@ class ApplicationController < ActionController::API
   end
 
   def current_token
-    @current_token ||= params[:token] || request.headers['X-Auth-Token']
+    @current_token ||= cookies[session_cookie_name]
   end
 
   def current_session
     return @current_session if @current_session
     if current_token
       decrypted_token = encryptor.decrypt_and_verify(Base64.decode64(current_token))
-      app_id, session_token, user_id, user_agent = JSON.parse(decrypted_token)
+      app_id, session_token, user_id, digest = JSON.parse(decrypted_token)
       return nil if app_id != current_app.id
       @current_session = Session.find_by_app_id_and_token(app_id, session_token)
-      return nil unless @current_session
-      raise 'unexpected user_id mismatch' if user_id != @current_session.user_id
-      raise 'unexpected user_agent mismatch' if user_agent != @current_session.user_agent
-      @current_session = nil if request.user_agent != @current_session.user_agent
+      return nil unless @current_session && @current_session.matches_request(request)
+      raise 'incosistent session data' if digest != @current_session.digest
       @current_session
     end
   end
 
-  def new_session!
+  def initialize_session!
     @current_session = Session.new(
       app_id: current_app.id,
       user_id: current_user.id,
       user_agent: request.user_agent,
       token: Session.generate_unique_secure_token,
+      device_id: cookies[:readybase_device_id] || Session.generate_unique_secure_token,
+      last_ip: request.remote_ip,
       expires_at: DateTime.now + 365.days # TODO check app config
     )
     @current_session.save!
+    cookies[session_cookie_name] = {
+      value: get_encrypted_token,
+      expires: @current_session.expires_at,
+      httponly: true
+    }
+    cookies.permanent[:readybase_device_id] = current_session.device_id
+    @current_session
+  end
+
+  def cookies
+    request.cookie_jar
+  end
+
+  def session_cookie_name
+    "readybase_session_#{current_app.public_id}"
   end
 
   def current_user
@@ -79,8 +94,7 @@ class ApplicationController < ActionController::API
       current_app.id,
       current_session.token,
       current_user.id,
-      current_session.user_agent,
-      current_session.expires_at,
+      current_session.digest,
       SecureRandom.hex(16)
     ].to_json)).gsub("\n","")
   end

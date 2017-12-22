@@ -19,21 +19,9 @@ class User < ApplicationRecord
     user
   end
 
-  def read_only_atttributes
-    {'id' => unique_id}.merge(self.slice(:created_at, :updated_at))
-  end
-
   def writeable_attributes
     # NOTE Password is writeable but not persisted, so it is not included here.
     self.slice(:email, :username, :data, :roles, :belongs_to)
-  end
-
-  def readable_attributes
-    read_only_atttributes.merge(writeable_attributes)
-  end
-
-  def attributes_for_api
-    readable_attributes
   end
 
   def apply_defaults

@@ -51,6 +51,16 @@ class AppsController < ApplicationController
 
   private
 
+  def scope
+    return @scope if @scope
+    @scope = App
+    if params[:user_id]
+      owner_id = User.unique_id_to_id(params[:user_id])
+      @scope = @scope.where(owner_id: owner_id)
+    end
+    @scope
+  end
+
   def current_user_can_edit_app?(app)
     app && current_user && app.owner_id == current_user.id
   end

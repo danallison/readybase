@@ -9,7 +9,9 @@ class AppObject < ApplicationRecord
   self.inheritance_column = :nil
 
   def type_complies_with_app_config
+    return unless app
     allowed_object_types = app.config['allowed_object_types']
+    return unless allowed_object_types
     no_type_restriction = allowed_object_types.include?('*')
     unless no_type_restriction || allowed_object_types.include?(type)
       errors.add(:type, "'#{type}' is not a valid object type")
@@ -20,8 +22,8 @@ class AppObject < ApplicationRecord
     self.type ||= 'object'
   end
 
-  def attributes_for_api
-    {'id' => unique_id}.merge(self.slice(:type, :belongs_to, :data, :created_at, :updated_at))
+  def writeable_attributes
+    self.slice(:type, :belongs_to, :data)
   end
 
 end

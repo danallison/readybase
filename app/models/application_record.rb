@@ -49,8 +49,20 @@ class ApplicationRecord < ActiveRecord::Base
   def apply_defaults
   end
 
+  def read_only_atttributes
+    {'id' => unique_id}.merge(self.slice(:created_at, :updated_at))
+  end
+
+  def writeable_attributes
+    {}
+  end
+
+  def readable_attributes
+    read_only_atttributes.merge(writeable_attributes)
+  end
+
   def attributes_for_api
-    raise "#{self.class} has not defined its 'attributes_for_api'"
+    readable_attributes
   end
 
   def unique_id_prefix
