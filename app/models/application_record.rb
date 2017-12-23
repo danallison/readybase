@@ -39,11 +39,11 @@ class ApplicationRecord < ActiveRecord::Base
   end
 
   def self.where_associated(association_params)
-    association_foreign_key_sql = association_model.where(association_params).to_sql.gsub(
-      "SELECT \"#{association_model.table_name}\".* FROM ",
-      "SELECT \"#{association_model.table_name}\".\"#{association_foreign_key}\" FROM "
-    )
-    self.where("\"#{table_name}\".\"id\" IN (#{association_foreign_key_sql})")
+    association_sql = association_model
+                      .where(association_params)
+                      .select(association_foreign_key)
+                      .to_sql
+    self.where("\"#{table_name}\".\"id\" IN (#{association_sql})")
   end
 
   def apply_defaults

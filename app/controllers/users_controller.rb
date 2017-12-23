@@ -4,8 +4,10 @@ class UsersController < ApplicationController
     assign_params_to_user(user, params)
     user.app_id = current_app.id
     user.save!
-    @current_user = user
-    initialize_session! unless current_session
+    unless current_session
+      @current_user = user
+      initialize_session!
+    end
     render json: sanitize(user)
   end
 
