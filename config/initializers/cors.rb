@@ -7,7 +7,7 @@
 
 Rails.application.config.middleware.insert_before 0, Rack::Cors do
   allow do
-    origins '*'
-    resource '*', headers: :any, methods: :any
+    origins lambda {|source, env| true }
+    resource '*', headers: :any, methods: :any, credentials: true
   end
 end
