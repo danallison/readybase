@@ -46,8 +46,9 @@ class ApplicationController < ActionController::API
       app_id, session_token, user_id, digest = JSON.parse(decrypted_token)
       return nil if app_id != current_app.id
       @current_session = Session.find_by_app_id_and_token(app_id, session_token)
-      return nil unless @current_session && @current_session.matches_request(request)
-      raise 'incosistent session data' if digest != @current_session.digest
+      return nil unless @current_session && @current_session.matches_request?(request)
+      raise 'inconsistent session data' if digest != @current_session.digest
+      @current_session.update_request_attributes!(request)
       @current_session
     end
   end
@@ -57,6 +58,7 @@ class ApplicationController < ActionController::API
       app_id: current_app.id,
       user_id: current_user.id,
       user_agent: request.user_agent,
+      origin: request.origin,
       token: Session.generate_unique_secure_token,
       device_id: cookies[:readybase_device_id] || Session.generate_unique_secure_token,
       last_ip: request.remote_ip,

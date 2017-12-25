@@ -11,8 +11,15 @@ class Session < ApplicationRecord
 
   @@ua_parser = UserAgentParser::Parser.new
 
-  def matches_request(request)
+  def matches_request?(request)
+    request.origin == origin &&
     parse_user_agent(request.user_agent) == [device, operating_system, browser]
+  end
+
+  def update_request_attributes!(request)
+    self.user_agent = request.user_agent
+    self.last_ip = request.remote_ip
+    save!
   end
 
   def parse_user_agent(ua = nil)
@@ -37,6 +44,17 @@ class Session < ApplicationRecord
   end
 
   def digest
-    @digest ||= Digest::SHA256.hexdigest([id, token, app_id, user_id, device_id, device, operating_system, browser].to_json)
+    @digest ||= Digest::SHA256.hexdigest([
+      id,
+      created_at,
+      token,
+      app_id,
+      user_id,
+      device_id,
+      device,
+      operating_system,
+      browser,
+      origin
+    ].to_json)
   end
 end
