@@ -4,9 +4,9 @@ one:
   app_id: 1
   email: dan@calculist.io
   username: dan
-  password_digest:
-  token:
-  roles:
+  password_digest: <%= SecureRandom.hex(4) %>
+  token: <%= User.generate_unique_secure_token %>
+  roles: ['default']
   reset_password_token:
   reset_password_sent_at:
-  data:
+  data: {}

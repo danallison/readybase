@@ -5,7 +5,7 @@ class SessionsController < ApplicationController
       unless current_session
         initialize_session!
       end
-      render json: sanitize(current_user)
+      render json: sanitize(current_user), status: :created
     else
       render json: {message: 'invalid email or password'}, status: :unauthorized
     end
@@ -28,7 +28,7 @@ class SessionsController < ApplicationController
     end
     if session
       destroy_session(session)
-      render json: {}
+      render status: :no_content
     else
       render json: {message:"invalid credentials"}, status: :unauthorized
     end

@@ -3,7 +3,9 @@
 one:
   name: ReadyBase
   public_id: <%= Rails.application.config.meta_app_id %>
+  config: <%= Rails.application.config.default_app_config.to_json %>
 
 two:
   name: Todo App
   public_id: todoapp
+  config: <%= Rails.application.config.default_app_config.to_json %>

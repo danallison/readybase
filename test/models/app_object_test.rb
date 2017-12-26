@@ -63,8 +63,8 @@ class AppObjectTest < ActiveSupport::TestCase
       }
     }
     app.save!
-    sanitized_object = app.config_service.sanitize_for_read_access(object, user)
-    sanitized_object = app.config_service.sanitize_for_read_access(user, user)
+    sanitized_object = app.config_service.sanitize_for_access(object, user, 'read')
+    sanitized_object = app.config_service.sanitize_for_access(user, user, 'read')
     puts sanitized_object
   end
 

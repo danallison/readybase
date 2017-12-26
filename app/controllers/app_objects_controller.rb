@@ -7,7 +7,7 @@ class AppObjectsController < ApplicationController
     object.app_id = current_app.id
     if can_edit_object?(object)
       object.save!
-      render json: object.attributes_for_api
+      render json: object.attributes_for_api, status: :created
     else
       # TODO
       render json: {message:'forbidden'}, status: :forbidden

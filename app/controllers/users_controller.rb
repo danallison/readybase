@@ -8,7 +8,7 @@ class UsersController < ApplicationController
       @current_user = user
       initialize_session!
     end
-    render json: sanitize(user)
+    render json: sanitize(user), status: :created
   end
 
   def update
