@@ -40,15 +40,17 @@ class ApplicationController < ActionController::API
   end
 
   def current_session
-    return @current_session if @current_session
+    return @current_session if defined?(@current_session)
     if current_token
       decrypted_token = encryptor.decrypt_and_verify(Base64.decode64(current_token))
       app_id, session_token, user_id, digest = JSON.parse(decrypted_token)
-      return nil if app_id != current_app.id
+      return @current_session = nil if app_id != current_app.id
       @current_session = Session.find_by_app_id_and_token(app_id, session_token)
-      return nil unless @current_session && @current_session.matches_request?(request)
-      raise 'inconsistent session data' if digest != @current_session.digest
-      @current_session.update_request_attributes!(request)
+      return nil if @current_session.nil?
+      return @current_session = nil unless @current_session.matches_request?(request)
+      return @current_session = nil if user_id != @current_session.user_id
+      return @current_session = nil if digest != @current_session.digest
+      @current_session.update_from_request!(request)
       @current_session
     end
   end
@@ -83,8 +85,8 @@ class ApplicationController < ActionController::API
   end
 
   def current_user
-    return @current_user if @current_user
-    @current_user = current_session.user if current_session
+    return @current_user if defined?(@current_user)
+    @current_user = current_session ? current_session.user : nil
   end
 
   def encryptor

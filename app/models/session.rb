@@ -12,14 +12,14 @@ class Session < ApplicationRecord
   @@ua_parser = UserAgentParser::Parser.new
 
   def matches_request?(request)
-    request.origin == origin &&
+    (request.origin == origin || Rails.env.development?) &&
     parse_user_agent(request.user_agent) == [device, operating_system, browser]
   end
 
-  def update_request_attributes!(request)
+  def update_from_request!(request)
     self.user_agent = request.user_agent
     self.last_ip = request.remote_ip
-    save!
+    self.changed? ? save! : touch
   end
 
   def parse_user_agent(ua = nil)
@@ -36,7 +36,7 @@ class Session < ApplicationRecord
   end
 
   def attributes_for_api
-    {'id' => unique_id}.merge(self.slice(:user_agent, :device, :operating_system, :browser, :last_ip, :created_at))
+    {'id' => unique_id}.merge(self.slice(:user_agent, :device, :operating_system, :browser, :last_ip, :created_at, :updated_at))
   end
 
   def pulic_attributes_for_api
