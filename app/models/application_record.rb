@@ -39,9 +39,29 @@ class ApplicationRecord < ActiveRecord::Base
   end
 
   def self.where_associated(association_params)
+    unless association_params[:app_id]
+      raise 'app_id is required'
+    end
     association_sql = association_model
                       .where(association_params)
                       .select(association_foreign_key)
+                      .to_sql
+    self.where("\"#{table_name}\".\"id\" IN (#{association_sql})")
+  end
+
+  def self.where_has_associated(association_params)
+    unless association_params[:app_id]
+      raise 'app_id is required'
+    end
+    if association_params[:object_id]
+      model_of_association = AppObjectAssociation
+    elsif association_params[:user_id]
+      model_of_association = UserAssociation
+    end
+    association_params[:associated_type] = unique_id_prefix
+    association_sql = model_of_association
+                      .where(association_params)
+                      .select(:associated_id)
                       .to_sql
     self.where("\"#{table_name}\".\"id\" IN (#{association_sql})")
   end

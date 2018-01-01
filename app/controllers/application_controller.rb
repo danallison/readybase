@@ -110,6 +110,9 @@ class ApplicationController < ActionController::API
   def scope
     return @scope if @scope
     @scope = model.where(app_id: current_app.id)
+    if params[:scope]
+      # TODO
+    end
     if params[:user_id]
       associated_user_scope = User.where(app_id: current_app.id)
       associated_user = associated_user_scope.find_by_unique_id(params[:user_id])
@@ -132,6 +135,9 @@ class ApplicationController < ActionController::API
         associated_id: scope_id.to_i
       )
     end
+    if params[:sort]
+      # TODO
+    end
     @scope
   end
 
@@ -140,7 +146,11 @@ class ApplicationController < ActionController::API
   end
 
   def sanitize(object)
-    current_app.config_service.sanitize_for_access(object, current_user, 'read')
+    obj = current_app.config_service.sanitize_for_access(object, current_user, 'read')
+    if params[:fields]
+      # TODO
+    end
+    obj
   end
 
   def render(options)

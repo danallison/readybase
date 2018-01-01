@@ -1,6 +1,9 @@
 class User < ApplicationRecord
+  VALID_EMAIL_REGEX = /\A[\w+\-.]+@[a-z\d\-]+(\.[a-z\d\-]+)*\.[a-z]+\z/i
   has_secure_password
   has_secure_token
+
+  before_save :downcase_email_and_username
 
   # NOTE reset_password_token should be a secure token, but
   # we don't want it to generate on create.
@@ -8,14 +11,17 @@ class User < ApplicationRecord
 
   belongs_to :app
   has_many :apps, foreign_key: :owner_id
+  has_many :user_associations, dependent: :destroy
 
   validates :app_id, presence: true
-  validates :email, presence: true
+  validates :email, presence: true, format: { with: VALID_EMAIL_REGEX }
   validates :username, presence: true
 
   def self.find_by_email_or_username(email, username)
-    user = self.where(email: email || username).first
-    user = self.where(username: username).first if !user && username
+    email = email.downcase if email
+    username = username.downcase if username
+    user = self.where(email: email || username).first if (email || username) =~ VALID_EMAIL_REGEX
+    user = self.where(username: username || email).first unless user
     user
   end
 
@@ -28,7 +34,14 @@ class User < ApplicationRecord
     defaults = app.config['defaults']['users']
     self.data = defaults['data'] if data.blank?
     self.roles = defaults['roles'] if roles.blank?
+    self.username ||= email
+    downcase_email_and_username
     self.reset_password_token = nil
+  end
+
+  def downcase_email_and_username
+    self.email = email.downcase
+    self.username = username.downcase
   end
 
   def generate_reset_password_token

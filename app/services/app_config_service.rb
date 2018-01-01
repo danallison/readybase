@@ -50,7 +50,7 @@ class AppConfigService
       end
       attrs_for_role
     end
-    attrs_for_each_role.compact[0] # TODO account for multiple roles
+    attrs_for_each_role.compact[0] || {} # TODO account for multiple roles
   end
 
   private
