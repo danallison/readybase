@@ -7,7 +7,7 @@ class AppObjectsController < ApplicationController
     object.app_id = current_app.id
     if can_edit_object?(object)
       object.save!
-      render json: object.attributes_for_api, status: :created
+      render json: sanitize(object), status: :created
     else
       # TODO
       render json: {message:'forbidden'}, status: :forbidden
@@ -19,7 +19,7 @@ class AppObjectsController < ApplicationController
     if can_edit_object?(object)
       assign_params_to_object(object, params)
       object.save!
-      render json: object.attributes_for_api
+      render json: sanitize(object)
     elsif !object
       render json: {message:'object not found'}, status: :not_found
     elsif !current_user
@@ -32,12 +32,12 @@ class AppObjectsController < ApplicationController
   def show
     object = requested_object
     if can_edit_object?(object)
-      response = object.attributes_for_api
-      if params[:include]
+      response = object.readable_attributes
+      if params[:attach]
         associations = AppObjectAssociation.where(
           app_id: current_app.id,
           object_id: object.id,
-          association_name: params[:include].singularize
+          association_name: params[:attach].singularize
         )
         associated_ids_by_type = {}
         associations.each do |a|
@@ -48,20 +48,20 @@ class AppObjectsController < ApplicationController
         users = user_ids ? User.where(app_id: current_app.id, id: user_ids) : []
         object_ids = associated_ids_by_type[AppObject.unique_id_prefix]
         objects = object_ids ? AppObject.where(app_id: current_app.id, id: object_ids) : []
-        response[:included] = {
-          params[:include] => (users.to_a + objects.to_a).map(&:attributes_for_api)
+        response[:attached] = {
+          params[:attach] => (users.to_a + objects.to_a).map {|obj| sanitize(obj) }
         }
       end
       render json: response
     elsif object
-      render json: object.attributes_for_api
+      render json: sanitize(object)
     else
       render json: {message:'object not found'}, status: :not_found
     end
   end
 
   def index
-    render json: scope.map(&:attributes_for_api)
+    render json: scope.map {|obj| sanitize(obj) }
   end
 
   private

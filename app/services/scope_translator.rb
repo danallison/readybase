@@ -1,8 +1,9 @@
 class ScopeTranslator
   @@scope_parser = nil
 
-  def initialize(app_id)
+  def initialize(app_id, current_user = nil)
     @app_id = app_id
+    @current_user = current_user
   end
 
   def translate(scope_string)
@@ -37,6 +38,9 @@ class ScopeTranslator
     end
     if right.is_a?(Hash)
       right = scope_from_definition({object_type: object_type, condition: right})
+    end
+    if @current_user
+      left, right = [left, right].map {|lr| lr == '@self' ? @current_user.unique_id : lr }
     end
     if operator == :belongs_to
       model = object_type == 'user' ? User : AppObject

@@ -111,7 +111,8 @@ class ApplicationController < ActionController::API
     return @scope if @scope
     @scope = model.where(app_id: current_app.id)
     if params[:scope]
-      # TODO
+      sql = ScopeTranslator.new(current_app.id, current_user).translate(params[:scope])
+      @scope = @scope.where(sql)
     end
     if params[:user_id]
       associated_user_scope = User.where(app_id: current_app.id)
@@ -148,7 +149,8 @@ class ApplicationController < ActionController::API
   def sanitize(object)
     obj = current_app.config_service.sanitize_for_access(object, current_user, 'read')
     if params[:fields]
-      # TODO
+      params[:fields] = JSON.parse(params[:fields]) if params[:fields].is_a?(String)
+      obj = FieldSelector.select_fields(obj, params[:fields])
     end
     obj
   end
