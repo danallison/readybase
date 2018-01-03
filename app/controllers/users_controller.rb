@@ -38,7 +38,7 @@ class UsersController < ApplicationController
   end
 
   def index
-    render json: scope.map {|user| sanitize(user) }
+    render json: generate_paginated_response
   end
 
   private
@@ -52,19 +52,27 @@ class UsersController < ApplicationController
     attrs[:email] = params[:email] if params[:email]
     attrs[:username] = params[:username] if params[:username]
     attrs[:password] = params[:password] if params[:password]
-    attrs[:data] = params[:data].dup if params[:data]
-    attrs[:belongs_to] = params[:belongs_to].dup if params[:belongs_to]
+    attrs[:data] = params[:data] if params[:data]
+    attrs[:belongs_to] = params[:belongs_to] if params[:belongs_to]
+    attrs[:roles] = params[:roles] if params[:roles]
     attrs = sanitize_attrs_for_write(attrs, user).with_indifferent_access
 
     user.email = attrs[:email] if attrs[:email]
     user.username = attrs[:username] if attrs[:username]
     user.password = attrs[:password] if attrs[:password]
-    if attrs[:data]
-      # TODO Recursively merge nested hashes
-      user.data = (user.data || {}).merge(attrs[:data]).compact
-    end
     if attrs[:belongs_to]
-      user.belongs_to = (user.belongs_to || {}).merge(attrs[:belongs_to]).compact
+      user.belongs_to = ApplicationService.merge_recursively(
+        user.belongs_to || {},
+        attrs[:belongs_to],
+        {compact: true, append_arrays: params[:append_arrays]}
+      )
+    end
+    if attrs[:data]
+      user.data = ApplicationService.merge_recursively(
+        user.data || {},
+        attrs[:data],
+        {compact: true, append_arrays: params[:append_arrays]}
+      )
     end
   end
 

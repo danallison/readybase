@@ -1,4 +1,4 @@
-class AppConfigService
+class AppConfigService < ApplicationService
 
   def initialize(config)
     @config = config
@@ -46,17 +46,6 @@ class AppConfigService
       patch: 'update',
       delete: 'delete'
     }[action.downcase.to_sym] || action.downcase
-  end
-
-  def merge_recursively(hash0, hash1)
-    hash1.each do |key, val|
-      if hash0[key].is_a?(Hash) && val.is_a?(Hash)
-        merge_recursively(hash0[key], val)
-      else
-        hash0[key] = val
-      end
-    end
-    hash0
   end
 
 end

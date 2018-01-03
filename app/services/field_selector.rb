@@ -1,12 +1,11 @@
-class FieldSelector
+class FieldSelector < ApplicationService
   def self.select_fields(object_attrs, fields)
     selected_attrs = {}
     fields.each do |field|
       is_negation = field[0] == '-'
       field = field[1..-1] if is_negation
       if field == '*'
-        # TODO find a more efficient way to deep clone
-        selected_attrs = JSON.parse(object_attrs.to_json)
+        selected_attrs = deep_clone_hash(object_attrs)
       elsif field.include?('.')
         field = field.split('.')
         oa = object_attrs

@@ -1,4 +1,4 @@
-class ScopeTranslator
+class ScopeTranslator < ApplicationService
   @@scope_parser = nil
 
   def initialize(app_id, current_user = nil)

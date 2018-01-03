@@ -143,6 +143,9 @@ class ApplicationController < ActionController::API
   end
 
   def sanitize_attrs_for_write(attrs, object)
+    # NOTE This json hack is required to prevent the error:
+    # "ActionController::UnfilteredParameters (unable to convert unpermitted parameters to hash)"
+    attrs = JSON.parse(attrs.to_json)
     current_app.config_service.sanitize_for_access(object, current_user, 'write', request.method, attrs)
   end
 
@@ -153,6 +156,42 @@ class ApplicationController < ActionController::API
       obj = FieldSelector.select_fields(obj, params[:fields])
     end
     obj
+  end
+
+  def sanitize_collection(collection)
+    collection.map {|obj| sanitize(obj) }
+  end
+
+  def paginate(collection)
+    page = (params[:page] && params[:page].to_i > 0) ? params[:page].to_i : 1
+    per_page = (params[:per_page] && params[:per_page].to_i > 0) ? params[:per_page].to_i : 10
+    with_record_count = params[:with_record_count] == 'true'
+    with_page_count = params[:with_page_count] == 'true'
+    record_count = collection.count if with_record_count || with_page_count
+    page_count = (record_count.to_f / per_page).ceil if with_page_count
+    offset = (page - 1) * per_page
+    collection = collection.limit(per_page).offset(offset)
+    paging = {
+      page: page,
+      per_page: per_page
+    }
+    paging[:record_count] = record_count if with_record_count
+    paging[:page_count] = page_count if with_page_count
+    [collection, paging]
+  end
+
+  def generate_paginated_response
+    collection, paging = paginate(scope)
+    collection = sanitize_collection(collection)
+    json_response = {
+      data: collection,
+      paging: paging
+    }
+    json_response[:scope] = params[:scope] if params[:scope]
+    # TODO
+    # json_response[:sort] = params[:sort] if params[:sort]
+    json_response[:fields] = params[:fields] if params[:fields]
+    json_response
   end
 
   def render(options)

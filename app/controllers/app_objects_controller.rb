@@ -61,7 +61,7 @@ class AppObjectsController < ApplicationController
   end
 
   def index
-    render json: scope.map {|obj| sanitize(obj) }
+    render json: generate_paginated_response
   end
 
   private
@@ -82,9 +82,28 @@ class AppObjectsController < ApplicationController
 
   def assign_params_to_object(object, params)
     params[:type] = params[:object_type] if params[:object_type]
-    object.type = params[:type].singularize if params[:type]
-    object.belongs_to = params[:belongs_to] if params[:belongs_to]
-    object.data = params[:data] if params[:data]
+
+    attrs = {}
+    attrs[:type] = params[:type] if params[:type]
+    attrs[:data] = params[:data] if params[:data]
+    attrs[:belongs_to] = params[:belongs_to] if params[:belongs_to]
+    attrs = sanitize_attrs_for_write(attrs, object).with_indifferent_access
+
+    object.type = attrs[:type].singularize if attrs[:type]
+    if attrs[:belongs_to]
+      object.belongs_to = ApplicationService.merge_recursively(
+        object.belongs_to || {},
+        attrs[:belongs_to],
+        {compact: true, append_arrays: params[:append_arrays]}
+      )
+    end
+    if attrs[:data]
+      object.data = ApplicationService.merge_recursively(
+        object.data || {},
+        attrs[:data],
+        {compact: true, append_arrays: params[:append_arrays]}
+      )
+    end
   end
 
   def can_edit_object?(object)
