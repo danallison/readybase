@@ -12,7 +12,7 @@ class AppConfigService < ApplicationService
     roles = (current_user.nil? || current_user.id.nil?) ? ['@anonymous'] : current_user.roles
     object_type = object.is_a?(AppObject) ? object.type : "#{object.class}".downcase
     if current_user && object.is_a?(User) && object.id == current_user.id
-      roles = roles.map {|r| "@self.#{r}" } + roles
+      roles += roles.map {|r| "@self.#{r}" }
     end
     object_attrs ||= access_type == 'read' ? object.readable_attributes : object.writeable_attributes
     begin
@@ -23,17 +23,19 @@ class AppConfigService < ApplicationService
     return {} if role_rules.empty?
     can_access_all = role_rules.values.any?{|rules| rules == ['*'] }
     return object_attrs if can_access_all
-    attrs_for_each_role = roles.map do |role|
+    merged_attrs = nil
+    roles.each do |role|
       rules = role_rules[role]
       rules = rules[normalize_action(action)] if rules.is_a?(Hash)
       next unless rules
-      FieldSelector.select_fields(object_attrs, rules)
+      selected_attrs = FieldSelector.select_fields(object_attrs, rules)
+      if merged_attrs
+        merged_attrs = merge_recursively(merged_attrs, selected_attrs)
+      else
+        merged_attrs = selected_attrs
+      end
     end
-    merged_attrs = {}
-    attrs_for_each_role.compact.reverse_each do |attrs|
-      merged_attrs = merge_recursively(merged_attrs, attrs)
-    end
-    merged_attrs
+    merged_attrs || {}
   end
 
   private

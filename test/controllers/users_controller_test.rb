@@ -29,6 +29,18 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     signout
   end
 
+  test "should paginate index" do
+    signin
+    per_page = 1
+    page = 1
+    get "/api/v1/users?page=#{page}&per_page=#{per_page}", headers: @headers, as: :json
+    json_response = JSON.parse(response.body)
+    assert_equal(per_page, json_response['paging']['per_page'])
+    assert_equal(per_page, json_response['data'].length)
+    assert_equal(page, json_response['paging']['page'])
+    signout
+  end
+
   test "should create user when given email and password" do
     params = {
       email: 'thomas@readybase.org',

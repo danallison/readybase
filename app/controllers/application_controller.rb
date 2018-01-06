@@ -193,12 +193,4 @@ class ApplicationController < ActionController::API
     json_response[:fields] = params[:fields] if params[:fields]
     json_response
   end
-
-  def render(options)
-    options[:json] = options[:json].to_json unless options[:json].is_a?(String)
-    # Assuming 8-bit characters
-    byte_count = options[:json].length.bytes
-    puts "BYTES => #{byte_count}"
-    super(options)
-  end
 end

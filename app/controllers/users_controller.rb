@@ -64,14 +64,14 @@ class UsersController < ApplicationController
       user.belongs_to = ApplicationService.merge_recursively(
         user.belongs_to || {},
         attrs[:belongs_to],
-        {compact: true, append_arrays: params[:append_arrays]}
+        {compact: true, merge_arrays: params[:merge_arrays]}
       )
     end
     if attrs[:data]
       user.data = ApplicationService.merge_recursively(
         user.data || {},
         attrs[:data],
-        {compact: true, append_arrays: params[:append_arrays]}
+        {compact: true, merge_arrays: params[:merge_arrays]}
       )
     end
   end

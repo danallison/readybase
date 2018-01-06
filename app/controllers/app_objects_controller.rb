@@ -1,11 +1,10 @@
 class AppObjectsController < ApplicationController
   def create
     object = AppObject.new
-    # TODO check and validate associated_object_type
     assign_params_to_object(object, params)
     object.type ||= 'object'
     object.app_id = current_app.id
-    if can_edit_object?(object)
+    if object
       object.save!
       render json: sanitize(object), status: :created
     else
@@ -16,7 +15,7 @@ class AppObjectsController < ApplicationController
 
   def update
     object = requested_object
-    if can_edit_object?(object)
+    if object
       assign_params_to_object(object, params)
       object.save!
       render json: sanitize(object)
@@ -31,29 +30,29 @@ class AppObjectsController < ApplicationController
 
   def show
     object = requested_object
-    if can_edit_object?(object)
-      response = object.readable_attributes
-      if params[:attach]
-        associations = AppObjectAssociation.where(
-          app_id: current_app.id,
-          object_id: object.id,
-          association_name: params[:attach].singularize
-        )
-        associated_ids_by_type = {}
-        associations.each do |a|
-          associated_ids_by_type[a.associated_type] ||= []
-          associated_ids_by_type[a.associated_type] << a.associated_id
-        end
-        user_ids = associated_ids_by_type[User.unique_id_prefix]
-        users = user_ids ? User.where(app_id: current_app.id, id: user_ids) : []
-        object_ids = associated_ids_by_type[AppObject.unique_id_prefix]
-        objects = object_ids ? AppObject.where(app_id: current_app.id, id: object_ids) : []
-        response[:attached] = {
-          params[:attach] => (users.to_a + objects.to_a).map {|obj| sanitize(obj) }
-        }
-      end
-      render json: response
-    elsif object
+    # if can_edit_object?(object)
+    #   response = object.readable_attributes
+    #   if params[:attach]
+    #     associations = AppObjectAssociation.where(
+    #       app_id: current_app.id,
+    #       object_id: object.id,
+    #       association_name: params[:attach].singularize
+    #     )
+    #     associated_ids_by_type = {}
+    #     associations.each do |a|
+    #       associated_ids_by_type[a.associated_type] ||= []
+    #       associated_ids_by_type[a.associated_type] << a.associated_id
+    #     end
+    #     user_ids = associated_ids_by_type[User.unique_id_prefix]
+    #     users = user_ids ? User.where(app_id: current_app.id, id: user_ids) : []
+    #     object_ids = associated_ids_by_type[AppObject.unique_id_prefix]
+    #     objects = object_ids ? AppObject.where(app_id: current_app.id, id: object_ids) : []
+    #     response[:attached] = {
+    #       params[:attach] => (users.to_a + objects.to_a).map {|obj| sanitize(obj) }
+    #     }
+    #   end
+    #   render json: response
+    if object
       render json: sanitize(object)
     else
       render json: {message:'object not found'}, status: :not_found
@@ -94,21 +93,16 @@ class AppObjectsController < ApplicationController
       object.belongs_to = ApplicationService.merge_recursively(
         object.belongs_to || {},
         attrs[:belongs_to],
-        {compact: true, append_arrays: params[:append_arrays]}
+        {compact: true, merge_arrays: params[:merge_arrays]}
       )
     end
     if attrs[:data]
       object.data = ApplicationService.merge_recursively(
         object.data || {},
         attrs[:data],
-        {compact: true, append_arrays: params[:append_arrays]}
+        {compact: true, merge_arrays: params[:merge_arrays]}
       )
     end
-  end
-
-  def can_edit_object?(object)
-    # TODO
-    object #&& current_user
   end
 
 end

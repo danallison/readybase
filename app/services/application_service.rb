@@ -7,8 +7,16 @@ class ApplicationService
         else
           hash0[key] = merge_recursively({}, val, options)
         end
-      elsif options[:append_arrays] && hash0[key].is_a?(Array) && val.is_a?(Array)
-        hash0[key] += val
+      elsif options[:merge_arrays] && hash0[key].is_a?(Array) && val.is_a?(Array)
+        if options[:merge_arrays] == 'append'
+          hash0[key] += val
+        elsif options[:merge_arrays] == 'union'
+          hash0[key] |= val
+        elsif options[:merge_arrays] == 'remove'
+          hash0[key] -= val
+        else
+          raise "unrecognized merge operation '#{options[:merge_arrays]}'"
+        end
       else
         hash0[key] = val
       end
