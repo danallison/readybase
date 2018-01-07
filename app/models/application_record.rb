@@ -26,10 +26,6 @@ class ApplicationRecord < ActiveRecord::Base
     self.find_by_id(self.unique_id_to_id(uid))
   end
 
-  def self.find_by_app_id_and_unique_id(app_id, uid)
-    self.find_by_app_id_and_id(app_id, self.unique_id_to_id(uid))
-  end
-
   def self.association_model
     "#{self}Association".constantize rescue nil
   end
@@ -39,9 +35,6 @@ class ApplicationRecord < ActiveRecord::Base
   end
 
   def self.where_associated(association_params)
-    unless association_params[:app_id]
-      raise 'app_id is required'
-    end
     association_sql = association_model
                       .where(association_params)
                       .select(association_foreign_key)
@@ -50,9 +43,6 @@ class ApplicationRecord < ActiveRecord::Base
   end
 
   def self.where_has_associated(association_params)
-    unless association_params[:app_id]
-      raise 'app_id is required'
-    end
     if association_params[:object_id]
       model_of_association = AppObjectAssociation
     elsif association_params[:user_id]
@@ -105,7 +95,7 @@ class ApplicationRecord < ActiveRecord::Base
     return unless association_model
     if belongs_to_changed? || force == true
       association_model.transaction do
-        association_model.where(app_id: app_id, association_foreign_key => id).delete_all
+        association_model.where(association_foreign_key => id).delete_all
         belongs_to.each do |association_name, uids|
           uids = [uids] if uids.is_a?(String)
           # TODO error if uids in not an array
@@ -114,7 +104,6 @@ class ApplicationRecord < ActiveRecord::Base
             associated_type, associated_id = self.class.unique_id_to_prefix_and_id(uid)
             # TODO validate association (or not?)
             association_model.create({
-              app_id: app_id,
               association_foreign_key => id,
               association_name: association_name,
               associated_type: associated_type,

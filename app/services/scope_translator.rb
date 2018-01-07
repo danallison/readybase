@@ -1,8 +1,7 @@
 class ScopeTranslator < ApplicationService
   @@scope_parser = nil
 
-  def initialize(app_id, current_user = nil)
-    @app_id = app_id
+  def initialize(current_user = nil)
     @current_user = current_user
   end
 
@@ -47,17 +46,13 @@ class ScopeTranslator < ApplicationService
       if left == "@#{object_type}"
         prefix, id = ApplicationRecord.unique_id_to_prefix_and_id(right)
         sql = model.where_associated(
-          app_id: @app_id,
           associated_type: prefix,
           associated_id: id
         ).to_sql
       elsif right == "@#{object_type}"
         prefix, id = ApplicationRecord.unique_id_to_prefix_and_id(left)
         foreign_key = prefix == 'u' ? :user_id : :object_id
-        sql = model.where_has_associated(
-          app_id: @app_id,
-          foreign_key => id
-        ).to_sql
+        sql = model.where_has_associated(foreign_key => id).to_sql
       end
       where_string = ' WHERE '
       where_index = sql.index(where_string)

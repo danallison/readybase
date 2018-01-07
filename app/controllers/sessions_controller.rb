@@ -15,7 +15,6 @@ class SessionsController < ApplicationController
     if current_session && params[:id]
       # TODO Figure out correct way to allow admin to delete other users' sessions
       session = Session.where(
-        app_id: current_app.id,
         user_id: current_user.id,
         id: Session.unique_id_to_id(params[:id])
       ).first
@@ -36,7 +35,7 @@ class SessionsController < ApplicationController
 
   def index
     if current_session
-      sessions = Session.where(app_id: current_app.id, user_id: current_user.id)
+      sessions = Session.where(user_id: current_user.id)
       # TODO Flag current session in collection
       render json: sessions.map(&:attributes_for_api)
     else
@@ -61,7 +60,7 @@ class SessionsController < ApplicationController
   def current_user
     return @current_user if @current_user
     if (params[:email] || params[:username]) && params[:password]
-      user = current_app.users.find_by_email_or_username(params[:email], params[:username])
+      user = User.find_by_email_or_username(params[:email], params[:username])
       @current_user = user if user && user.authenticate(params[:password])
     else
       @current_user = super

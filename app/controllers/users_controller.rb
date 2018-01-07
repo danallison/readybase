@@ -2,7 +2,6 @@ class UsersController < ApplicationController
   def create
     user = User.new
     assign_params_to_user(user, params)
-    user.app_id = current_app.id
     user.save!
     unless current_session
       @current_user = user

@@ -3,7 +3,6 @@ class AppObjectsController < ApplicationController
     object = AppObject.new
     assign_params_to_object(object, params)
     object.type ||= 'object'
-    object.app_id = current_app.id
     if object
       object.save!
       render json: sanitize(object), status: :created
@@ -34,7 +33,6 @@ class AppObjectsController < ApplicationController
     #   response = object.readable_attributes
     #   if params[:attach]
     #     associations = AppObjectAssociation.where(
-    #       app_id: current_app.id,
     #       object_id: object.id,
     #       association_name: params[:attach].singularize
     #     )
@@ -44,9 +42,9 @@ class AppObjectsController < ApplicationController
     #       associated_ids_by_type[a.associated_type] << a.associated_id
     #     end
     #     user_ids = associated_ids_by_type[User.unique_id_prefix]
-    #     users = user_ids ? User.where(app_id: current_app.id, id: user_ids) : []
+    #     users = user_ids ? User.where(id: user_ids) : []
     #     object_ids = associated_ids_by_type[AppObject.unique_id_prefix]
-    #     objects = object_ids ? AppObject.where(app_id: current_app.id, id: object_ids) : []
+    #     objects = object_ids ? AppObject.where(id: object_ids) : []
     #     response[:attached] = {
     #       params[:attach] => (users.to_a + objects.to_a).map {|obj| sanitize(obj) }
     #     }

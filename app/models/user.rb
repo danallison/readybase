@@ -9,11 +9,8 @@ class User < ApplicationRecord
   # we don't want it to generate on create.
   # has_secure_token :reset_password_token
 
-  belongs_to :app
-  has_many :apps, foreign_key: :owner_id
   has_many :user_associations, dependent: :destroy
 
-  validates :app_id, presence: true
   validates :email, presence: true, format: { with: VALID_EMAIL_REGEX }
   validates :username, presence: true
 
@@ -31,7 +28,7 @@ class User < ApplicationRecord
   end
 
   def apply_defaults
-    defaults = app.config['defaults']['users']
+    defaults = Rails.application.config.readybase_config['defaults']['users']
     self.data = defaults['data'] if data.blank?
     self.roles = defaults['roles'] if roles.blank?
     self.username ||= email

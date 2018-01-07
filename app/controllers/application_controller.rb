@@ -1,39 +1,6 @@
 class ApplicationController < ActionController::API
 
-  before_action :enforce_app_config
-
   private
-
-  def enforce_app_config
-    if !current_app_public_id
-      render json: {message:"header 'X-App-ID' must be a valid app ID"}, status: :not_acceptable
-    elsif !current_app
-      render json: {message:"app not found"}, status: :not_found
-    elsif !current_domain_matches_config?
-      render json: {message:"domain not allowed"}, status: :forbidden
-    end
-  end
-
-  def current_domain_matches_config?
-    allow_domains = current_app.config['allow_domains']
-    return true unless allow_domains
-    allow_domains = [allow_domains] if allow_domains.is_a?(String)
-    domain_matches = false
-    allow_domains.each do |allow_domain|
-      matcher = /#{allow_domain.gsub('.', '\.').gsub('*','.+')}/i
-      domain_matches = matcher.match(request.domain)
-      break if domain_matches
-    end
-    domain_matches
-  end
-
-  def current_app_public_id
-    request.headers['X-App-ID']
-  end
-
-  def current_app
-    @current_app ||= App.find_by_public_id(current_app_public_id)
-  end
 
   def current_token
     @current_token ||= cookies[session_cookie_name]
@@ -43,9 +10,8 @@ class ApplicationController < ActionController::API
     return @current_session if defined?(@current_session)
     if current_token
       decrypted_token = encryptor.decrypt_and_verify(Base64.decode64(current_token))
-      app_id, session_token, user_id, digest = JSON.parse(decrypted_token)
-      return @current_session = nil if app_id != current_app.id
-      @current_session = Session.find_by_app_id_and_token(app_id, session_token)
+      session_token, user_id, digest = JSON.parse(decrypted_token)
+      @current_session = Session.where(token: session_token).first
       return nil if @current_session.nil?
       return @current_session = nil unless @current_session.matches_request?(request)
       return @current_session = nil if user_id != @current_session.user_id
@@ -57,7 +23,6 @@ class ApplicationController < ActionController::API
 
   def initialize_session!
     @current_session = Session.new(
-      app_id: current_app.id,
       user_id: current_user.id,
       user_agent: request.user_agent,
       origin: request.origin,
@@ -81,7 +46,7 @@ class ApplicationController < ActionController::API
   end
 
   def session_cookie_name
-    "readybase_session_#{current_app.public_id}"
+    "readybase_session"
   end
 
   def current_user
@@ -95,7 +60,6 @@ class ApplicationController < ActionController::API
 
   def get_encrypted_token
     Base64.encode64(encryptor.encrypt_and_sign([
-      current_app.id,
       current_session.token,
       current_user.id,
       current_session.digest,
@@ -109,29 +73,26 @@ class ApplicationController < ActionController::API
 
   def scope
     return @scope if @scope
-    @scope = model.where(app_id: current_app.id)
+    @scope = model
     if params[:scope]
-      sql = ScopeTranslator.new(current_app.id, current_user).translate(params[:scope])
+      sql = ScopeTranslator.new(current_user).translate(params[:scope])
       @scope = @scope.where(sql)
     end
     if params[:user_id]
-      associated_user_scope = User.where(app_id: current_app.id)
-      associated_user = associated_user_scope.find_by_unique_id(params[:user_id])
+      associated_user = User.find_by_unique_id(params[:user_id])
       scope_id = associated_user.id # This will raise if associated_user is nil
       prefix = User.unique_id_prefix
     elsif params[:app_object_id]
-      associated_object_scope = AppObject.where(app_id: current_app.id)
       if params[:associated_object_type]
         associated_object_type = params[:associated_object_type].singularize
-        associated_object_scope = associated_object_scope.where(type: associated_object_type)
+        associated_object_scope = AppObject.where(type: associated_object_type)
       end
       associated_object = associated_object_scope.find_by_unique_id(params[:app_object_id])
       scope_id = associated_object.id # This will raise if associated_object is nil
       prefix = AppObject.unique_id_prefix
     end
     if scope_id && prefix
-      @scope = scope.where_associated(
-        app_id: current_app.id,
+      @scope = @scope.where_associated(
         associated_type: prefix,
         associated_id: scope_id.to_i
       )
@@ -146,11 +107,11 @@ class ApplicationController < ActionController::API
     # NOTE This json hack is required to prevent the error:
     # "ActionController::UnfilteredParameters (unable to convert unpermitted parameters to hash)"
     attrs = JSON.parse(attrs.to_json)
-    current_app.config_service.sanitize_for_access(object, current_user, 'write', request.method, attrs)
+    AppConfigService.sanitize_for_access(object, current_user, 'write', request.method, attrs)
   end
 
   def sanitize(object)
-    obj = current_app.config_service.sanitize_for_access(object, current_user, 'read')
+    obj = AppConfigService.sanitize_for_access(object, current_user, 'read')
     if params[:fields]
       params[:fields] = JSON.parse(params[:fields]) if params[:fields].is_a?(String)
       obj = FieldSelector.select_fields(obj, params[:fields])

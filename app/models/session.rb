@@ -1,9 +1,7 @@
 class Session < ApplicationRecord
   has_secure_token
-  belongs_to :app
   belongs_to :user
 
-  validates :app_id, presence: true
   validates :user_id, presence: true
   validates :token, presence: true
 
@@ -48,7 +46,6 @@ class Session < ApplicationRecord
       id,
       created_at,
       token,
-      app_id,
       user_id,
       device_id,
       device,

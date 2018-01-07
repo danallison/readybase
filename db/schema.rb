@@ -10,47 +10,32 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20171225043922) do
+ActiveRecord::Schema.define(version: 20180107032631) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
   create_table "app_object_associations", force: :cascade do |t|
-    t.integer  "app_id"
     t.integer  "object_id"
     t.string   "association_name"
     t.string   "associated_type"
     t.integer  "associated_id"
     t.datetime "created_at",       null: false
     t.datetime "updated_at",       null: false
-    t.index ["app_id", "associated_type", "associated_id"], name: "index_object_associations_on_app_id_and_associated_columns", using: :btree
-    t.index ["app_id", "object_id"], name: "index_app_object_associations_on_app_id_and_object_id", using: :btree
+    t.index ["associated_type", "associated_id"], name: "index_object_associations_on_associated_columns", using: :btree
+    t.index ["object_id"], name: "index_app_object_associations_on_object_id", using: :btree
   end
 
   create_table "app_objects", force: :cascade do |t|
-    t.integer  "app_id"
     t.string   "type"
     t.jsonb    "belongs_to", default: {}
     t.jsonb    "data",       default: {}
     t.datetime "created_at",              null: false
     t.datetime "updated_at",              null: false
-    t.index ["app_id", "type"], name: "index_app_objects_on_app_id_and_type", using: :btree
-    t.index ["app_id"], name: "index_app_objects_on_app_id", using: :btree
-  end
-
-  create_table "apps", force: :cascade do |t|
-    t.string   "name"
-    t.string   "public_id"
-    t.integer  "owner_id"
-    t.jsonb    "config",      default: {}
-    t.jsonb    "public_data", default: {}
-    t.datetime "created_at",               null: false
-    t.datetime "updated_at",               null: false
-    t.index ["public_id"], name: "index_apps_on_public_id", unique: true, using: :btree
+    t.index ["type"], name: "index_app_objects_on_type", using: :btree
   end
 
   create_table "sessions", force: :cascade do |t|
-    t.integer  "app_id"
     t.integer  "user_id"
     t.string   "token"
     t.string   "user_agent"
@@ -63,24 +48,22 @@ ActiveRecord::Schema.define(version: 20171225043922) do
     t.string   "browser"
     t.string   "last_ip"
     t.string   "origin"
-    t.index ["app_id", "token"], name: "index_sessions_on_app_id_and_token", unique: true, using: :btree
-    t.index ["app_id", "user_id"], name: "index_sessions_on_app_id_and_user_id", using: :btree
+    t.index ["token"], name: "index_sessions_on_token", unique: true, using: :btree
+    t.index ["user_id"], name: "index_sessions_on_user_id", using: :btree
   end
 
   create_table "user_associations", force: :cascade do |t|
-    t.integer  "app_id"
     t.integer  "user_id"
     t.string   "association_name"
     t.string   "associated_type"
     t.integer  "associated_id"
     t.datetime "created_at",       null: false
     t.datetime "updated_at",       null: false
-    t.index ["app_id", "associated_type", "associated_id"], name: "index_user_associations_on_app_id_and_associated_columns", using: :btree
-    t.index ["app_id", "user_id"], name: "index_user_associations_on_app_id_and_user_id", using: :btree
+    t.index ["associated_type", "associated_id"], name: "index_user_associations_on_associated_columns", using: :btree
+    t.index ["user_id"], name: "index_user_associations_on_user_id", using: :btree
   end
 
   create_table "users", force: :cascade do |t|
-    t.integer  "app_id"
     t.string   "email"
     t.string   "username"
     t.string   "password_digest"
@@ -92,10 +75,10 @@ ActiveRecord::Schema.define(version: 20171225043922) do
     t.jsonb    "data",                   default: {}
     t.datetime "created_at",                          null: false
     t.datetime "updated_at",                          null: false
-    t.index ["app_id", "email"], name: "index_users_on_app_id_and_email", unique: true, using: :btree
-    t.index ["app_id", "reset_password_token"], name: "index_users_on_app_id_and_reset_password_token", unique: true, using: :btree
-    t.index ["app_id", "token"], name: "index_users_on_app_id_and_token", unique: true, using: :btree
-    t.index ["app_id", "username"], name: "index_users_on_app_id_and_username", unique: true, using: :btree
+    t.index ["email"], name: "index_users_on_email", unique: true, using: :btree
+    t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true, using: :btree
+    t.index ["token"], name: "index_users_on_token", unique: true, using: :btree
+    t.index ["username"], name: "index_users_on_username", unique: true, using: :btree
   end
 
 end
