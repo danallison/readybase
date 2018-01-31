@@ -41,7 +41,7 @@ class AppConfigService < ApplicationService
 
   private
 
-  def normalize_action(action)
+  def self.normalize_action(action)
     {
       get: 'read',
       post: 'create',
