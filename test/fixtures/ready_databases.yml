@@ -1,0 +1,9 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  custom_id: custom_id_1
+  data: 
+
+two:
+  custom_id: custom_id_2
+  data: 

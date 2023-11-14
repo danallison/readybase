@@ -1,0 +1,15 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  ready_database: one
+  resource_type: MyString
+  custom_id: custom_id_1
+  data: 
+  belongs_to: 
+
+two:
+  ready_database: two
+  resource_type: MyString
+  custom_id: custom_id_2
+  data: 
+  belongs_to: 

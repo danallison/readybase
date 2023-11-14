@@ -1,0 +1,2 @@
+class ReadyDatabase < ApplicationRecord
+end
